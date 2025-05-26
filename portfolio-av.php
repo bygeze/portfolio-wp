@@ -24,7 +24,7 @@ function mi_portfolio_registrar_cpt() {
     'public' => true,
     'has_archive' => true,
     'rewrite' => array('slug' => 'portfolio'),
-    'supports' => array('title', 'editor', 'thumbnail'),
+    'supports' => array('title', 'thumbnail'),
     'menu_icon' => 'dashicons-format-video',
     'show_in_rest' => true
   );
@@ -98,3 +98,32 @@ function mi_portfolio_permitir_mime_video($mimes) {
   return $mimes;
 }
 add_filter('upload_mimes', 'mi_portfolio_permitir_mime_video');
+
+// Metabox para descripción en texto plano
+function mi_portfolio_add_descripcion_metabox() {
+    add_meta_box(
+      'mi_portfolio_descripcion',
+      'Descripción (solo texto)',
+      'mi_portfolio_descripcion_callback',
+      'portfolio',
+      'normal',
+      'default'
+    );
+  }
+  add_action('add_meta_boxes', 'mi_portfolio_add_descripcion_metabox');
+  
+  function mi_portfolio_descripcion_callback($post) {
+    $descripcion = get_post_meta($post->ID, '_mi_portfolio_descripcion', true);
+    echo '<textarea name="mi_portfolio_descripcion" rows="5" style="width:100%;">' . esc_textarea($descripcion) . '</textarea>';
+  }
+  
+  function mi_portfolio_guardar_descripcion($post_id) {
+    if (array_key_exists('mi_portfolio_descripcion', $_POST)) {
+      update_post_meta(
+        $post_id,
+        '_mi_portfolio_descripcion',
+        sanitize_text_field($_POST['mi_portfolio_descripcion'])
+      );
+    }
+  }
+  add_action('save_post', 'mi_portfolio_guardar_descripcion');
